@@ -150,7 +150,6 @@ for i, (train_outer_ix, test_outer_ix) in enumerate(zip(ix_training, ix_test)):
     XGB_cv_temp = partial(XGB_cv, X_train = scaled_X_train, y_train = y_train, X_val = scaled_X_val, y_val = y_val)
     xgboostBO = BayesianOptimization(f = XGB_cv_temp, pbounds = pbounds, verbose = False, random_state = 42 )
     
-    # 메소드를 이용해 최대화!
     xgboostBO.maximize(init_points=4, n_iter = 8)
 
     model = XGBClassifier(
@@ -189,7 +188,7 @@ for i, (train_outer_ix, test_outer_ix) in enumerate(zip(ix_training, ix_test)):
     
 plot_roc_curve_with_ci(y_trues, y_scores, file_name, save_time)
 save_data(y_trues, y_scores, file_name, save_time)
-# 평균 및 신뢰 구간 계산 및 출력
+
 accuracy_scores_mean, accuracy_scores_lowci, accuracy_scores_highci, roc_auc_scores_mean, roc_auc_scores_lowci, roc_auc_scores_highci,  prec_scores_mean, prec_scores_lowci, prec_scores_highci,  recall_scores_mean, recall_scores_lowci, recall_scores_highci, f1_scores_mean, f1_scores_lowci, f1_scores_highci = calculate_performance_metrics_totalfold(accuracy_scores, roc_auc_scores, precision_scores,  recall_scores, f1_scores)
 
    
