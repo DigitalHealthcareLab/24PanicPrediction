@@ -15,16 +15,16 @@ The objective of this project is to develop a machine learning model to predict 
 ## Project Structure
 
 ### 1. Data Preprocessing
-- `emotion_diary.py`: Extracts and processes emotion diary data from raw data files ('정서일지' sheet).
-- `lifelog_foot.py`: Extracts and processes step count data from raw data files ('라이프로그-걸음수' sheet).
-- `lifelog_HR.py`: Extracts and processes heart rate data from raw data files ('라이프로그-심박수' sheet).
-- `lifelog_sleep.py`: Extracts and processes sleep data from raw data files ('라이프로그-수면' sheet).
-- `other_alcohol.py`: Extracts and processes alcohol consumption data from raw data files ('생활패턴-음주' sheet).
-- `other_coffee.py`: Extracts and processes coffee consumption data from raw data files ('생활패턴-카페인' sheet).
-- `other_demographics.py`: Extracts and processes demographic information from raw data files ('연구 참여자 기본 정보' sheet).
-- `other_exercise.py`: Extracts and processes exercise data from raw data files ('생활패턴-운동' sheet).
-- `other_panic.py`: Extracts and processes panic symptom reports from raw data files ('공황일지' sheet).
-- `other_smoking_diet_mens.py`: Extracts and processes data related to smoking habits, diet, and menstruation from raw data files ('생활패턴-흡연,식사,생리' sheet).
+- `emotion_diary.py`: Extracts and processes emotion diary data from raw data files.
+- `lifelog_foot.py`: Extracts and processes step count data from raw data files.
+- `lifelog_HR.py`: Extracts and processes heart rate data from raw data files.
+- `lifelog_sleep.py`: Extracts and processes sleep data from raw data files.
+- `other_alcohol.py`: Extracts and processes alcohol consumption data from raw data files.
+- `other_coffee.py`: Extracts and processes coffee consumption data from raw data files.
+- `other_demographics.py`: Extracts and processes demographic information from raw data files.
+- `other_exercise.py`: Extracts and processes exercise data from raw data files.
+- `other_panic.py`: Extracts and processes panic symptom reports from raw data files.
+- `other_smoking_diet_mens.py`: Extracts and processes data related to smoking habits, diet, and menstruation from raw data files.
 - `questionnaire_bydate.py`: Organizes and processes questionnaire data by date from various sheets of raw data files.
 - `questionnaire_byID.py`: Organizes and processes questionnaire data by participant ID from various sheets of raw data files.
 - `utils_for_preprocessing.py`: Contains utility functions for data preprocessing.
