@@ -36,14 +36,15 @@ for i in data_list:
 
 df_date = reduce(lambda x, y : pd.merge(x, y,on=['ID', 'date'], how='left'), data_list)
 
-#data save
+#data processing
 df_date.drop(['ht','wt','late_night_snack'], axis=1, inplace=True)
 df_date = df_date.dropna(subset=['acr'], axis=0)
 df_date.fillna(0, inplace=True)
 df_date.drop_duplicates(subset=['ID','date'], keep='first', inplace=True, ignore_index=True)
 df_date.reset_index(drop=True, inplace=True)
 df_date.rename(columns = {'foot':'foot_var'},inplace=True)
-# renaming columns of data
+
+# change names of renaming columns of data
 df_date.rename(columns = {'amp':'HR_amplitude', 'mesor':'HR_mesor', 'acr':'HR_acrophase', 'amp_delta':'HR_amplitude_difference','mesor_delta':'HR_mesor_difference', 'acr_delta':'HR_acrophase_difference', 'amp_delta2':'HR_amplitude_difference_2d','mesor_delta2':'HR_mesor_difference_2d', 'acr_delta2':'HR_acrophase_difference_2d', 'positive':'positive_feeling', 'foot_max':'steps_maximum', 'foot_var':'steps_variance', 'foot_mean':'steps_mean', 'bandpower_a':'bandpower(0.001-0.0005Hz)', 'bandpower_b':'bandpower(0.0005-0.0001Hz)', 'bandpower_c':'bandpower(0.0001-0.00005Hz)', 'bandpower_d':'bandpower(0.00005-0.00001Hz)', 'sleep_in':'sleep_onset_time','foot_hvar_mean':'steps_hvar_mean', 'sleep_out':'sleep_out_time', 'suicide_need_in_month':'suicide_need'},inplace=True)
 
 exclude_duplicated_id = "ID != ['SYM2-1-137', 'SYM2-1-334']"

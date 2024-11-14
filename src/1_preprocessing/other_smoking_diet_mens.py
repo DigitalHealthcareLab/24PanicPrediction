@@ -4,17 +4,17 @@ from utils_for_preprocessing import load_raw_file, exclude_duplicated_id
 import datetime
 
 #load file
-smoking_diet_mens= load_raw_file('생활패턴-흡연,식사,생리')
+smoking_diet_mens = load_raw_file('data/raw/Lifestyle - Smoking, Eating, Menstruation.xlsx', sheet_name='Sheet1')
 
 #data preprocessifng
 smoking_diet_mens = exclude_duplicated_id(smoking_diet_mens)
-smoking_diet_mens['흡연량'][(smoking_diet_mens['흡연량'] > 0)] = 1
-smoking_diet_mens['흡연량'][(smoking_diet_mens['흡연량'] != 1)] = 0
-smoking_diet_mens['생리'][(smoking_diet_mens['생리'] == 'Y')] = 1
-smoking_diet_mens['생리'][(smoking_diet_mens['생리'] != 1)] = 0
-smoking_diet_mens['야식'][(smoking_diet_mens['야식'] == 'Y')] = 1
-smoking_diet_mens['야식'][(smoking_diet_mens['야식'] != 1)] = 0
-smoking_diet_mens.drop(['아침식사', '점심식사', '저녁식사', '오전간식', '오후간식'], axis=1, inplace=True)
+smoking_diet_mens['Amount_smoked'][(smoking_diet_mens['Amount_smoked'] > 0)] = 1
+smoking_diet_mens['Amount_smoked'][(smoking_diet_mens['Amount_smoked'] != 1)] = 0
+smoking_diet_mens['Menstruation'][(smoking_diet_mens['Menstruation'] == 'Y')] = 1
+smoking_diet_mens['Menstruation'][(smoking_diet_mens['Menstruation'] != 1)] = 0
+smoking_diet_mens['Midnight_snack'][(smoking_diet_mens['Midnight_snack'] == 'Y')] = 1
+smoking_diet_mens['Midnight_snack'][(smoking_diet_mens['Midnight_snack'] != 1)] = 0
+smoking_diet_mens.drop(['Breakfast', 'Lunch', 'Dinner', 'Morning_snacks', 'Afternoon_snacks'], axis=1, inplace=True)
 smoking_diet_mens.columns = ["ID", "date", "smoking", "late_night_snack", "menstruation"]
 smoking_diet_mens.reset_index(drop=True, inplace=True)
 

@@ -1,7 +1,5 @@
 import numpy as np
-import pandas as pd
 import os
-
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score, accuracy_score, confusion_matrix
 from sklearn.preprocessing import label_binarize
@@ -17,7 +15,7 @@ from scipy import interp
 import pickle
 
 def load_data(path):
-    # 데이터 파일 불러오기
+    # Load data from a file
     with open(path, 'rb') as f:
         y_trues, y_scores = pickle.load(f)
     return y_trues, y_scores
@@ -25,10 +23,7 @@ def load_data(path):
 
 
 def save_data(y_trues, y_scores, file_name, save_time):
-    # 데이터 저장 경로 설정
     save_path = f'data/model_results/{file_name}/roc_data_{save_time}.pkl'
-    
-    # 데이터를 파일로 저장
     with open(save_path, 'wb') as f:
         pickle.dump((y_trues, y_scores), f)
     
@@ -38,7 +33,7 @@ def plot_roc_curve_with_ci(y_trues, y_scores, file_name, save_time, n_splits=5,)
     aucs = []
     mean_fpr = np.linspace(0, 1, 100)
 
-    # 각 폴드별 ROC 곡선 계산
+    # Compute ROC curve for each fold
     for i in range(n_splits):
         fpr, tpr, _ = roc_curve(y_trues[i], y_scores[i][:,1])
         roc_auc = auc(fpr, tpr)
@@ -46,20 +41,19 @@ def plot_roc_curve_with_ci(y_trues, y_scores, file_name, save_time, n_splits=5,)
         tprs[-1][0] = 0.0
         aucs.append(roc_auc)
 
-    # 평균 및 표준 편차 계산
+    # Calculate mean and standard deviation for ROC curve
     mean_tpr = np.mean(tprs, axis=0)
     mean_tpr[-1] = 1.0
     mean_auc = auc(mean_fpr, mean_tpr)
     std_auc = np.std(aucs)
     std_tpr = np.std(tprs, axis=0)
 
-    # 신뢰 구간 계산
+    # Compute confidence interval
     tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
     tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
 
-    # ROC 곡선 그리기
+    # Plot ROC curve
     plt.plot(mean_fpr, mean_tpr, lw = 2, color="black", label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc))
-    # plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=0.2, label=r'$\pm$ 1 std. dev.')
     plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=0.2)
 
     plt.plot([0, 1], [0, 1], linestyle='--', lw=1, color='grey', alpha=.7)
@@ -73,6 +67,7 @@ def plot_roc_curve_with_ci(y_trues, y_scores, file_name, save_time, n_splits=5,)
     plt.close()
     
 def plot_roc_curve_averagefold(y_test_aggr, predict_proba_aggr, roc_auc_scores_mean, title, save_path):
+    # Plot average ROC curve across folds
     fpr, tpr, thresholds = roc_curve(y_test_aggr, np.array(predict_proba_aggr)[:, 0], pos_label=0)
     lw = 2
     plt.figure(figsize=(10,8))
@@ -91,20 +86,20 @@ def plot_roc_curve_averagefold(y_test_aggr, predict_proba_aggr, roc_auc_scores_m
     plt.ylim([-0.05, 1.05])
 
     plt.legend(loc="lower right")
-    # 디렉토리가 존재하지 않는 경우 생성
+
+    # Ensure directory exists and save the plot
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
-    # 파일 저장
     plt.savefig(save_path, dpi=300)
     
 def calculate_performance_metrics_totalfold(accuracy_scores, roc_auc_scores, precision_scores, recall_scores, f1_scores):
-    # 각 성능 지표에 대한 평균과 95% 신뢰 구간 계산
+    # Calculate mean and 95% confidence intervals for performance metrics
     accuracy_mean, accuracy_lowci, accuracy_highci = calculate_confidence_interval(accuracy_scores)
     roc_auc_mean, roc_auc_lowci, roc_auc_highci = calculate_confidence_interval(roc_auc_scores)
     precision_mean, precision_lowci, precision_highci = calculate_confidence_interval(precision_scores)
     recall_mean, recall_lowci, recall_highci = calculate_confidence_interval(recall_scores)
     f1_mean, f1_lowci, f1_highci = calculate_confidence_interval(f1_scores)
     
-    # 평가 지표 출력
+    # Print aggregated results with confidence intervals
     print('<Aggregated Results>')
     print(f"Accuracy: {accuracy_mean:.3f} (95% CI {accuracy_lowci:.3f}-{accuracy_highci:.3f})")
     print(f"ROC AUC Score: {roc_auc_mean:.3f} (95% CI {roc_auc_lowci:.3f}-{roc_auc_highci:.3f})")
@@ -117,27 +112,23 @@ def calculate_performance_metrics_totalfold(accuracy_scores, roc_auc_scores, pre
 
 
 def calculate_performance_metrics_infold(model, y_test, predicted, predict_proba, accuracy_scores, roc_auc_scores, precision_scores, recall_scores, f1_scores):
-    # 정확도
+    # Calculate accuracy, ROC AUC, precision, recall, and F1 score, then store in respective lists
     accuracy = accuracy_score(y_test, predicted)
     accuracy_scores.append(accuracy)
 
-    # ROC AUC 점수
-    roc_auc = roc_auc_score(y_test, predict_proba[:, 1])  # 양성 클래스에 대한 확률
+    roc_auc = roc_auc_score(y_test, predict_proba[:, 1]) 
     roc_auc_scores.append(roc_auc)
 
-    # 정밀도
     precision = precision_score(y_test, predicted)
     precision_scores.append(precision)
 
-    # 재현율
     recall = recall_score(y_test, predicted)
     recall_scores.append(recall)
 
-    # F1 점수
     f1 = f1_score(y_test, predicted)
     f1_scores.append(f1)
     
-    # 성능 결과 출력
+    # Print performance results for the fold
     print('<', model.__class__.__name__, '-test>')
     print(f'Confusion Matrix: {confusion_matrix(y_test, predicted)}')
     print(f'Mean Accuracy Score: {accuracy:.4}')
@@ -150,6 +141,7 @@ def calculate_performance_metrics_infold(model, y_test, predicted, predict_proba
     return accuracy, roc_auc, precision, recall, f1
     
 def calculate_confidence_interval(data, confidence=0.95):
+    # Calculate mean and 95% confidence interval
     n = len(data)
     mean = np.mean(data)
     sem = stats.sem(data)
@@ -158,29 +150,22 @@ def calculate_confidence_interval(data, confidence=0.95):
 
 
 def find_optimal_thresholds(y_true, predict_proba):
-    # 양성 클래스에 대한 예측 확률 (보통 1이 양성 클래스임)
+    # Calculate the optimal threshold for positive class based on ROC curve and Youden's J statistic
     positive_proba = predict_proba[:, 1]
-
-    # ROC 곡선 계산
     fpr, tpr, thresholds = roc_curve(y_true, positive_proba)
-    
-    # Youden의 J 통계치를 사용하여 최적의 임곗값 찾기
     youden_index = tpr - fpr
     optimal_idx = np.argmax(youden_index)
     optimal_threshold = thresholds[optimal_idx]
-
     return optimal_threshold
 
 def calculate_performance_metrics_with_thresholds(model_name, y_true, predict_proba, optimal_thresholds):
+    # Calculate and print performance metrics using optimal thresholds
     predicted_optimal = [np.argmax([predict_proba[i, j] >= optimal_thresholds[j] for j in range(3)]) for i in range(len(predict_proba))]
-
-    # 위에서 정의된 성능 지표 계산 및 출력 함수 사용
     calculate_performance_metrics(model_name, y_true, predicted_optimal, predict_proba)
 
 def calculate_performance_metrics(model_name, y_true, predicted, predict_proba):
+    # Calculate and print accuracy, ROC AUC, precision, recall, and F1 scores for each class
     y_true_binarized = label_binarize(y_true, classes=[0, 1, 2])
-    
-    # 성능 지표 계산
     accuracy = accuracy_score(y_true, predicted)
     roc_auc_macro = roc_auc_score(y_true_binarized, predict_proba, multi_class='ovr', average='macro')
     roc_auc_classes = roc_auc_score(y_true_binarized, predict_proba, multi_class='ovr', average=None)
@@ -191,7 +176,6 @@ def calculate_performance_metrics(model_name, y_true, predicted, predict_proba):
     f1_macro = f1_score(y_true, predicted, average='macro')
     f1_classes = f1_score(y_true, predicted, average=None)
     
-    # 성능 지표 출력
     print(f'{model_name} Performance:')
     print(f'Accuracy Score: {accuracy:.3f}')
     print(f'ROC-AUC Score (Macro): {roc_auc_macro:.3f}')
@@ -239,9 +223,6 @@ def plot_roc_curve(y_test, y_pred, title, path):
   # Plot all ROC curves
     plt.figure(figsize=(10,8))
     lw = 2
-    # plt.plot(fpr["macro"], tpr["macro"],
-    #          label="macro-average ROC curve (area = {0:0.3f})".format(roc_auc["macro"]),
-    #          color="purple", linestyle="-.", linewidth=4,)
 
     colors = cycle(["gray", "green", "blue", "yellow", "red",'black','brown','goldenrod','gold',
                     'aqua','violet','darkslategray','mistyrose','darkorange','tan'])
@@ -258,9 +239,7 @@ def plot_roc_curve(y_test, y_pred, title, path):
     plt.ylabel("True Positive Rate")
     plt.title(title)
     plt.legend()
-    # 디렉토리가 존재하지 않는 경우 생성
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    # 파일 저장
     plt.savefig(path, dpi=300)
     
     
@@ -332,16 +311,12 @@ def plot_roc_curve_3class(y_test, y_pred, title, path):
     plt.figure(figsize=(10, 8))
     lw = 2
 
-    # 클래스별 색상과 이름 지정
     class_names = ['SD', 'DBP', 'DP']
     class_colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
 
     for i in range(n_classes):
         plt.plot(fpr[i], tpr[i], color=class_colors[i], lw=lw, linestyle="--",
                  label="ROC curve of class {0} (area = {1:0.3f})".format(class_names[i], roc_auc[i]))
-
-    # plt.plot(fpr["micro"], tpr["micro"], color="#e377c2", linestyle="-.", linewidth=0.5,
-    #          label="micro-average ROC curve (area = {0:0.3f})".format(roc_auc["micro"]))
 
     plt.plot(fpr["macro"], tpr["macro"], color="purple", linestyle="-.", linewidth=0.7,
              label="macro-average ROC curve (area = {0:0.3f})".format(roc_auc["macro"]))
@@ -354,8 +329,5 @@ def plot_roc_curve_3class(y_test, y_pred, title, path):
     plt.title(title)
     plt.legend()
 
-    # 디렉토리가 존재하지 않는 경우 생성
     os.makedirs(os.path.dirname(path), exist_ok=True)
-
-    # 파일 저장
     plt.savefig(path, dpi=300)

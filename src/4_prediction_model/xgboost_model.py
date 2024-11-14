@@ -6,23 +6,17 @@ import datetime
 import os
 import shap
 from sklearn.model_selection import StratifiedKFold
-import plotly.io as pio 
-from plotly.subplots import make_subplots
-import plotly.graph_objs as go
-
 from sklearn.metrics import average_precision_score
 from bayes_opt import BayesianOptimization
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from functools import partial
-from sklearn.metrics import accuracy_score, roc_auc_score, precision_score, recall_score, f1_score, confusion_matrix, auc, roc_curve
 from xgboost import XGBClassifier
-from xgboost import plot_importance
 from sklearn.utils import class_weight
-from utils import plot_roc_curve, plot_roc_curve_3class, createDirectory, find_optimal_thresholds, calculate_performance_metrics, calculate_confidence_interval, calculate_performance_metrics_infold, calculate_performance_metrics_totalfold, plot_roc_curve_averagefold, plot_roc_curve_with_ci, save_data
+from utils import createDirectory, calculate_performance_metrics_infold, calculate_performance_metrics_totalfold, plot_roc_curve_with_ci, save_data
 
 
-# make empty lists
+# Initialize empty lists for storing cross-validation results and SHAP values
 ix_training, ix_test = [], []
 predicted_aggr = []
 predict_proba_aggr = []
@@ -31,6 +25,7 @@ SHAP_values_per_fold = []
 scaled_X_test_aggr = []
 shap_values = [[] for _ in range(3)]
 
+# Initialize lists for performance metrics
 accuracy_scores = []
 roc_auc_macro_scores = []
 roc_auc_classes_0_scores = []
@@ -55,7 +50,7 @@ precision_scores = []
 recall_scores = [] 
 f1_scores = []
 
-# set the function for cross validation
+# Define cross-validation function for XGBoost with specified parameters
 def XGB_cv(max_depth, learning_rate, n_estimators,  X_train, X_val, y_train, y_val,
            colsample_bytree, min_child_weight):
     model = XGBClassifier(max_depth=int(max_depth),
@@ -72,12 +67,10 @@ def XGB_cv(max_depth, learning_rate, n_estimators,  X_train, X_val, y_train, y_v
     model.fit(X_train, y_train, eval_set=[(X_val, y_val)], verbose=False, sample_weight=classes_weights)
     predicted = model.predict(X_val)
     predict_proba = model.predict_proba(X_val)
-    # score = f1_score(y_val, predicted, average='macro')
     score = average_precision_score(y_val, predict_proba[:, 1])
-    # score = roc_auc_score(y_val, predict_proba[:,1])
     return score
 
-
+# Define hyperparameter bounds for Bayesian Optimization
 pbounds = {'max_depth': (6, 9),
           'learning_rate': (0.00005, 0.001),
           'n_estimators': (100, 180),
@@ -85,7 +78,7 @@ pbounds = {'max_depth': (6, 9),
           'min_child_weight': (2, 4)
           }
 
-# parameter setting
+# Set up directory and file path for saving results
 file_name = os.path.basename(__file__)
 save_time = datetime.datetime.now().strftime("%Y%m%d_%H%M")  
 target = 'panic'  
@@ -96,20 +89,16 @@ sys.stdout = open('data/model_results/' + file_name + '/' + save_time + '.txt', 
 
 # loading data
 df = pd.read_feather('data/processed/merged_df.feather')
-
 df = df.drop_duplicates(subset=['ID', 'date'], keep='first')
 
-
-
-# Stratified KFold
+# Set up Stratified KFold cross-validation
 str_kf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 y=df[target]
 group = df['ID']
-
 for fold in str_kf.split(df, y):
     ix_training.append(fold[0]), ix_test.append(fold[1])
     
-# model training          
+# cross-validation loop
 for i, (train_outer_ix, test_outer_ix) in enumerate(zip(ix_training, ix_test)):
     print('\n------ Fold Number:',i)
     X_train1, X_test = df.iloc[train_outer_ix], df.iloc[test_outer_ix]
@@ -120,7 +109,7 @@ for i, (train_outer_ix, test_outer_ix) in enumerate(zip(ix_training, ix_test)):
     ex_training, ex_test = [], []
     for fold in str_kf_2.split(X_train1, y_2):
         ex_training.append(fold[0]), ex_test.append(fold[1])
-        
+       
     for i, (train_inner_ix, test_inner_ix) in enumerate(zip(ex_training, ex_test)):
         pass 
     X_train, X_val = X_train1.iloc[train_inner_ix], X_train1.iloc[test_inner_ix]
@@ -132,7 +121,7 @@ for i, (train_outer_ix, test_outer_ix) in enumerate(zip(ix_training, ix_test)):
     X_val = X_val.drop(['ID', 'date', target], axis=1)
     X_test = X_test.drop(['ID', 'date', target], axis=1)
 
-
+    # Standardize and normalize data
     ss = StandardScaler()
     scaled_X_train = ss.fit_transform(X_train)
     scaled_X_train1 = ss.transform(X_train1)
@@ -144,14 +133,16 @@ for i, (train_outer_ix, test_outer_ix) in enumerate(zip(ix_training, ix_test)):
     scaled_X_val = mms.transform(scaled_X_val)
     scaled_X_test = mms.transform(scaled_X_test)
     
-    # define model
     classes_weights = class_weight.compute_sample_weight(class_weight='balanced', y=y_train)
-    
     XGB_cv_temp = partial(XGB_cv, X_train = scaled_X_train, y_train = y_train, X_val = scaled_X_val, y_val = y_val)
     xgboostBO = BayesianOptimization(f = XGB_cv_temp, pbounds = pbounds, verbose = False, random_state = 42 )
+<<<<<<< HEAD
     
+=======
+>>>>>>> 41efff0 (Clarify function and variable usage)
     xgboostBO.maximize(init_points=4, n_iter = 8)
 
+    # Optimize XGBoost hyperparameters using Bayesian Optimization
     model = XGBClassifier(
     n_estimators=int(xgboostBO.max['params']['n_estimators']),
     max_depth=int(xgboostBO.max['params']['max_depth']),
@@ -161,37 +152,42 @@ for i, (train_outer_ix, test_outer_ix) in enumerate(zip(ix_training, ix_test)):
     objective='binary:logistic',
     eval_metric='logloss',
     scale_pos_weight=1,
-    verbosity=0)  # 'silent' 대신 'verbosity' 사용
-
+    verbosity=0) 
 
     #run model
     model.fit(scaled_X_train, y_train, eval_set=[(scaled_X_val,y_val)], sample_weight=classes_weights, verbose=False)
     predicted = model.predict(scaled_X_test)
     predict_proba = model.predict_proba(scaled_X_test)
     
+    # Append predictions and probabilities to aggregate lists
     y_trues.append(y_test)
     y_scores.append(predict_proba)
-    
     predicted_aggr.extend(predicted)
     predict_proba_aggr.extend(predict_proba)
     y_test_aggr.extend(y_test)
     scaled_X_test_aggr.extend(scaled_X_test)
-    
+
+    # Calculate performance metrics for the fold
     accuracy, roc_auc, precision, recall, f1 = calculate_performance_metrics_infold(model, y_test, predicted, predict_proba, accuracy_scores, roc_auc_scores, precision_scores, recall_scores, f1_scores)
 
+    # SHAP value calculation
     explainer = shap.TreeExplainer(model, feature_perturbation='interventional')
     shap_values_fold = explainer.shap_values(scaled_X_test, check_additivity=False)
     for SHAP_values in shap_values_fold:
         SHAP_values_per_fold.append(SHAP_values)
 
 
-    
+# Plot ROC curve with confidence intervals and save results
 plot_roc_curve_with_ci(y_trues, y_scores, file_name, save_time)
 save_data(y_trues, y_scores, file_name, save_time)
 
+<<<<<<< HEAD
+=======
+# Calculate mean and confidence intervals for performance metrics
+>>>>>>> 41efff0 (Clarify function and variable usage)
 accuracy_scores_mean, accuracy_scores_lowci, accuracy_scores_highci, roc_auc_scores_mean, roc_auc_scores_lowci, roc_auc_scores_highci,  prec_scores_mean, prec_scores_lowci, prec_scores_highci,  recall_scores_mean, recall_scores_lowci, recall_scores_highci, f1_scores_mean, f1_scores_lowci, f1_scores_highci = calculate_performance_metrics_totalfold(accuracy_scores, roc_auc_scores, precision_scores,  recall_scores, f1_scores)
 
-   
+# Create SHAP summary plots and save as images
 new_index = [ix for ix_test_fold in ix_test for ix in ix_test_fold]
 fig_name = 'shap_'
 df = df.drop(['ID', 'date', target], axis=1)
@@ -199,55 +195,52 @@ shap.summary_plot(np.array(SHAP_values_per_fold), df.reindex(new_index), max_dis
 plt.savefig('data/model_results/'+ file_name + '/' + fig_name + save_time +'.png', dpi=300)
 plt.close()
 
-
+# SHAP summary plots for top 20 features
 fig_name = 'shap_top20_'
 shap.summary_plot(np.array(SHAP_values_per_fold), df.reindex(new_index), max_display = 20, show=False)
 plt.savefig('data/model_results/'+ file_name + '/' + fig_name + save_time +'.png', dpi=300)
 plt.close()
 
-
+# SHAP bar plots for top 20 features
 fig_name = 'shap_bar_top20_'
 shap.summary_plot(np.array(SHAP_values_per_fold), df.reindex(new_index), max_display = 20, show=False, plot_type="bar")
 plt.savefig('data/model_results/'+ file_name + '/' + fig_name + save_time +'.png', dpi=300)
 plt.close()
 
+# Define feature groups for SHAP value grouping
 question = ['ACQ', 'APPQ_1', 'APPQ_2', 'APPQ_3', 'BSQ', 'BFNE', 'CES_D', 'GAD_7', 'KOSSSF', 'PHQ_9', 'SADS', 'STAI_X1', 'BRIAN', 'CSM', 'CTQ_1', 'CTQ_2', 'CTQ_3', 'CTQ_4', 'CTQ_5', 'KRQ', 'MDQ', 'SPAQ_1', 'SPAQ_2', 'STAI_X2',]
 dailylog = ['alcohol', 'coffee', 'smoking', 'menstruation', 'exercise', 'positive_feeling', 'negative', 'positive_E', 'negative_E', 'anxiety', 'annoying', 'suicide_need', 'medication_in_month']
 lifelog = ['HR_var', 'HR_max', 'HR_mean', 'HR_hvar_mean', 'steps_variance', 'steps_maximum', 'steps_mean', 'steps_hvar_mean', 'HR_acrophase', 'HR_amplitude', 'HR_mesor', 'HR_acrophase_difference', 'HR_acrophase_difference_2d',     'HR_amplitude_difference', 'HR_amplitude_difference_2d', 'HR_mesor_difference', 'HR_mesor_difference_2d', 'bandpower(0.001-0.0005Hz)', 'bandpower(0.0005-0.0001Hz)', 'bandpower(0.0001-0.00005Hz)', 'bandpower(0.00005-0.00001Hz)', 'sleep_duration', 'sleep_onset_time', 'sleep_out_time']
 constant = [ 'age', 'gender', 'marriage', 'job', 'smkHx', 'drinkHx', 'suicideHx']
 
-# 그룹별로 SHAP 값 평균 계산
+# Convert SHAP values to numpy array
 shap_values = np.array(SHAP_values_per_fold)
 
-# 그룹별로 SHAP 값의 절대값 합 계산
+# Calculate absolute SHAP values for each group
 shap_values_sum_question = np.mean(np.abs([shap_values[:, df.columns.get_loc(col)] for col in question]), axis=0)
 shap_values_sum_dailylog = np.mean(np.abs([shap_values[:, df.columns.get_loc(col)] for col in dailylog]), axis=0)
 shap_values_sum_lifelog = np.mean(np.abs([shap_values[:, df.columns.get_loc(col)] for col in lifelog]), axis=0)
 shap_values_sum_constant = np.mean(np.abs([shap_values[:, df.columns.get_loc(col)] for col in constant]), axis=0)
 
-# 그룹별 SHAP 값의 절대값 평균 계산
+# Calculate mean of absolute SHAP values for each group
 shap_values_mean_question = shap_values_sum_question.mean()
 shap_values_mean_dailylog = shap_values_sum_dailylog.mean()
 shap_values_mean_lifelog = shap_values_sum_lifelog.mean()
 shap_values_mean_constant = shap_values_sum_constant.mean()
 
-# 그룹 이름과 SHAP 값의 절대값 평균 값을 리스트로 저장
+# Store group names and corresponding SHAP mean values
 group_names = ["Psychological data", "Daily log data", "Lifelog data", "Demographic data"]
 shap_values_mean = [shap_values_mean_question, shap_values_mean_dailylog, shap_values_mean_lifelog, shap_values_mean_constant]
 
-# 막대 그래프 그리기
+# Plot horizontal bar chart for mean SHAP values by group
 fig, ax = plt.subplots(figsize=(10, 4))
 ax.barh(group_names, shap_values_mean, color = 'green')
 ax.set_xlabel("mean(|SHAP value|) (average impact on model output magnitude)")
-# ax.set_title("Group Importance")
-
-# 그래프 저장
 fig_name = 'shap_group_importance_barplot_'
 plt.savefig('data/model_results/'+ file_name + '/' + fig_name + save_time +'.png', dpi=300, bbox_inches='tight')
 plt.close()
 
-
-# 변수 유형별 접두어 매핑
+# Map prefix labels for different feature groups
 prefix_map = {
     'question': '(C) ',
     'dailylog': '(D) ',
@@ -255,7 +248,7 @@ prefix_map = {
     'constant': '(S) '
 }
 
-# 각 변수 이름에 적절한 접두어 추가
+# Add appropriate prefixes to each variable name in the dataframe
 for col in df.columns:
     if col in question:
         df.rename(columns={col: prefix_map['question'] + col}, inplace=True)
@@ -266,24 +259,25 @@ for col in df.columns:
     elif col in constant:
         df.rename(columns={col: prefix_map['constant'] + col}, inplace=True)
 
+# Generate and save SHAP summary plots
 fig_name = 'shap_'
-# df = df.drop(['ID', 'date', target], axis=1)
 shap.summary_plot(np.array(SHAP_values_per_fold), df.reindex(new_index), max_display = 100, show=False)
 plt.savefig('data/model_results/'+ file_name + '/' + fig_name + save_time +'.png', dpi=300)
 plt.close()
 
-
+# Generate and save top 20 features SHAP summary plot
 fig_name = 'shap_top20_'
 shap.summary_plot(np.array(SHAP_values_per_fold), df.reindex(new_index), max_display = 20, show=False)
 plt.savefig('data/model_results/'+ file_name + '/' + fig_name + save_time +'.png', dpi=300)
 plt.close()
 
-
+# Generate and save bar plot for top 20 SHAP features
 fig_name = 'shap_bar_top20_'
 shap.summary_plot(np.array(SHAP_values_per_fold), df.reindex(new_index), max_display = 20, show=False, plot_type="bar")
 plt.savefig('data/model_results/'+ file_name + '/' + fig_name + save_time +'.png', dpi=300)
 plt.close()
 
+# Generate and save top 10 features SHAP summary plot with adjusted size and no color bar
 fig_name = 'shap_top10_'
 shap.summary_plot(np.array(SHAP_values_per_fold), df.reindex(new_index), max_display = 10, show=False, color_bar=False, plot_size=(5, 6.5))
 plt.savefig('data/model_results/'+ file_name + '/' + fig_name + save_time +'.png', dpi=300)

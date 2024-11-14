@@ -4,24 +4,24 @@ from datetime import datetime
 from utils_for_preprocessing import load_raw_file, exclude_duplicated_id
 
 #load file
-demographic_data= load_raw_file('연구 참여자 기본 정보')
+demographic_data= load_raw_file(path='data/raw/Basic research participant information.xlsx', sheet_name='Sheet1')
 
 #data preprocessing
 demographic_data = exclude_duplicated_id(demographic_data)
-demographic_data.drop(['연구 동의일', '연구 동의 철회일', '육체적 질병 경험',  '수입', '최근 음주 정보', '폐경 여부(M-남자)',	'최초 자살 시도 나이',	'자살 시도 횟수', '교육 수준',	'교육 수준(기타)', '흡연량', '음주로 인한 문제 발생 여부', 	'음주 정보', 	
-         '최근 12주 음주 여부',	'현재 혹은 과거 음주로 인한 문제 발생 여부',	'최근 1달 처방약 복약량(%)', '직업',	'직업(기타)',	'자녀수',	'종교',	'종교(기타)',	
-         '정신과적 질병 유무',	'정신과적 질병 리스트', '정신적 질병 경험', '최근 12주 흡연 여부', '최근 1달 자해 여부(Y/N)','최근 1달 자살 시도 여부'], axis=1, inplace=True)
-demographic_data['생년월일'] = pd.to_datetime(demographic_data['생년월일'], format = '%Y-%m-%d')
+demographic_data.drop(['Date_of_study_consent', 'Date_of_study_consent_withdrawal', 'Experience_of_physical_illness', 'Income', 'Recent_drinking_information', 'Menopausal_status_(M_male)',	'Age_at_first_suicide_attempt',	'Number_of_suicide_attempts_in_past_month', 'Education_level',	'Education_level_(other)', 'Amount_of_smoking', 'Problems_with_drinking_status', 	'Drinking_information', 	
+         'Past_12_weeks_drinking_status',	'Current_or_past_problems_with_drinking_status',	'Prescription_drug_dosage_in_the_past_month_(%)', 'Occupation',	'Occupation_(other)',	'Number_of_children',	'Religion',	'Religion_(other)',	
+         'Psychiatric_illnesses',	'List_of_psychiatric_illnesses', 'Experience_of_mental_illness', 'Past_12_weeks_smoking_status', 'Self_harm_in_the_past_month_(Y/N)','Prescription_drugs_in_the_past_month'], axis=1, inplace=True)
+demographic_data['Date_of_birth'] = pd.to_datetime(demographic_data['Date_of_birth'], format = '%Y%m%d')
 demographic_data.reset_index(drop=True, inplace=True)
 
 #check age of participants
 for i in range(demographic_data.shape[0]):
     today = datetime.now().date()
-    birth = demographic_data['생년월일'][i]
+    birth = demographic_data['Date_of_birth'][i]
     year = today.year - birth.year
     if today.month < birth.month or (today.month == birth.month and today.day < birth.day):
         year -= 1
-    demographic_data['생년월일'][i] = year
+    demographic_data['Date_of_birth'][i] = year
 
 #data preprocessing
 demographic_data.columns = ["ID", "age", "gender", 'ht', 'wt', 'marriage', 'job','smkHx','drinkHx','suicideHx','suicide_need_in_month','medication_in_month']

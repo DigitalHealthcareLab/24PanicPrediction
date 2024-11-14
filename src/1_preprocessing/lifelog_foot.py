@@ -4,16 +4,16 @@ from utils_for_preprocessing import load_raw_file, exclude_duplicated_id, exclud
 
 
 #load file
-foot_raw = load_raw_file('라이프로그-걸음수')
+foot_raw = load_raw_file(path = 'data/raw/Lifestyle - Step count.xlsx', sheet_name='Sheet1')
 
 #data preprocessing
 foot = exclude_duplicated_id(foot_raw)
 foot = exclude_15min_interval_data(foot)
 foot = exclude_miband_user_data(foot)
-foot = exclude_empty_data(foot, reference_column='측정값(-1 : 값 없음)', keyword = ',')
-exclude_total_foot_zero_data = foot[foot['총 걸음수']==0].index
+foot = exclude_empty_data(foot, reference_column='Measure_(_1:_no_value)', keyword = ',')
+exclude_total_foot_zero_data = foot[foot['Total_steps']==0].index
 foot.drop(exclude_total_foot_zero_data, axis=0, inplace=True)
-foot.drop(['총 걸음수', '측정 단위'], axis=1, inplace=True)
+foot.drop(['Total_steps', 'Measurement_types'], axis=1, inplace=True)
 foot.reset_index(drop=True, inplace=True)
 foot_melted = serialize_lifelog_data(foot)
 foot_melted.rename(columns = {'lifelog_data':'foot'}, inplace=True)
