@@ -4,7 +4,7 @@ from datetime import datetime
 from utils_for_preprocessing import load_raw_file, exclude_duplicated_id
 
 #load file
-demographic_data= load_raw_file(path='data/raw/Basic research participant information.xlsx', sheet_name='Sheet1')
+demographic_data= load_raw_file(path='data/raw/Basic research participation information.xlsx', sheet_name='Sheet1')
 
 #data preprocessing
 demographic_data = exclude_duplicated_id(demographic_data)

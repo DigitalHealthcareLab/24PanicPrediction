@@ -4,14 +4,14 @@ import datetime
 import os
 from utils_for_preprocessing import load_raw_file, exclude_duplicated_id
 
-panic = load_raw_file('data/raw/Panic diary.xlsx', sheet_name='Sheet1')
+panic = load_raw_file('data/raw/Panic Diary.xlsx', sheet_name='Sheet1')
 
 #data preprocessing
 panic = exclude_duplicated_id(panic)
 panic.drop(['End_time', 'Duration', 'Intensity', 'Comorbidities'], axis=1, inplace=True)
 panic['Start_time'] = panic['Start_time'].astype(str) + ':00'
 panic.columns = ['ID','date','time']
-panic['datetime'] = panic['date'] + ' ' + panic['time']
+panic['datetime'] = panic['date'].astype(str) + ' ' + panic['time']
 panic['panic'] = 1 
 panic.reset_index(drop=True, inplace=True)
 

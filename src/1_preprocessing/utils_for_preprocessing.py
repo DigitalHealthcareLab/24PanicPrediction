@@ -38,7 +38,7 @@ def exclude_15min_interval_data(df):
     return df
 
 def exclude_empty_data(df, reference_column, keyword):
-    df =df.loc[df[reference_column].str.contains(keyword)]
+    df =df.loc[df[reference_column].str.contains(keyword, regex=False, na=False)]
     return df
 
 def serialize_lifelog_data(df):

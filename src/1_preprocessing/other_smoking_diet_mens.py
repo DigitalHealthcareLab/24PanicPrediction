@@ -12,9 +12,9 @@ smoking_diet_mens['Amount_smoked'][(smoking_diet_mens['Amount_smoked'] > 0)] = 1
 smoking_diet_mens['Amount_smoked'][(smoking_diet_mens['Amount_smoked'] != 1)] = 0
 smoking_diet_mens['Menstruation'][(smoking_diet_mens['Menstruation'] == 'Y')] = 1
 smoking_diet_mens['Menstruation'][(smoking_diet_mens['Menstruation'] != 1)] = 0
-smoking_diet_mens['Midnight_snack'][(smoking_diet_mens['Midnight_snack'] == 'Y')] = 1
-smoking_diet_mens['Midnight_snack'][(smoking_diet_mens['Midnight_snack'] != 1)] = 0
-smoking_diet_mens.drop(['Breakfast', 'Lunch', 'Dinner', 'Morning_snacks', 'Afternoon_snacks'], axis=1, inplace=True)
+smoking_diet_mens['Midnight_snacks'][(smoking_diet_mens['Midnight_snacks'] == 'Y')] = 1
+smoking_diet_mens['Midnight_snacks'][(smoking_diet_mens['Midnight_snacks'] != 1)] = 0
+smoking_diet_mens.drop(['Breakfast', 'Lunch', 'Dinner', 'Morning_snack', 'Afternoon_snack'], axis=1, inplace=True)
 smoking_diet_mens.columns = ["ID", "date", "smoking", "late_night_snack", "menstruation"]
 smoking_diet_mens.reset_index(drop=True, inplace=True)
 

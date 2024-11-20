@@ -18,7 +18,7 @@ HR_melted = serialize_lifelog_data(HR)
 HR_melted.rename(columns = {'lifelog_data':'HR'}, inplace=True)
 HR_melted.loc[HR_melted['HR'] == '-1', 'HR'] = '0'
 HR_melted.fillna('0', inplace=True)
-HR_melted['date'] = HR_melted['date'].str[:10] 
+HR_melted['date'] = HR_melted['date'].astype(str).str[:10] 
 
 #data save to feather
 HR_melted.to_feather("data/processed/HR.feather")

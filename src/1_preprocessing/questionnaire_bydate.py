@@ -20,6 +20,8 @@ STAI_X1 = extract_questionnaire_from_raw(path = 'data/raw/4 State anxiety.xlsx',
 
 #data merge
 data_list = [ACQ, APPQ_1, APPQ_2, APPQ_3, BSQ, BFNE, CES_D, GAD_7, KOSSSF, PHQ_9, SADS, STAI_X1 ]
+for df in data_list:
+    df['date'] = pd.to_datetime(df['date'], errors='coerce')  # Convert to datetime
 questionnaire_bydate = reduce(lambda x, y : pd.merge(x, y,on=['ID', 'date'], how='outer'), data_list)
 
 #convert type from object to float

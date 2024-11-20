@@ -4,12 +4,12 @@ from utils_for_preprocessing import extract_questionnaire_from_raw, extract_emot
 from functools import reduce
 
 #load file
-positive = extract_emotion_diary_from_raw(path = 'data/raw/Emotion diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'positive', questionnaire_column = 'Positive_Mood')
-negative = extract_emotion_diary_from_raw(path = 'data/raw/Emotion diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'negative', questionnaire_column = 'Negative_Mood')
-positive_E = extract_emotion_diary_from_raw(path = 'data/raw/Emotion diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'positive_E', questionnaire_column = 'Positive_energy')
-negative_E = extract_emotion_diary_from_raw(path = 'data/raw/Emotion diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'negative_E', questionnaire_column = 'Negative_energy')
-anxiety = extract_emotion_diary_from_raw(path = 'data/raw/Emotion diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'anxiety', questionnaire_column = 'Anxiety')
-annoying = extract_emotion_diary_from_raw(path = 'data/raw/Emotion diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'annoying', questionnaire_column = 'Irritation')
+positive = extract_emotion_diary_from_raw(path = 'data/raw/Emotion Diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'positive', questionnaire_column = 'Positive_Mood')
+negative = extract_emotion_diary_from_raw(path = 'data/raw/Emotion Diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'negative', questionnaire_column = 'Negative_Mood')
+positive_E = extract_emotion_diary_from_raw(path = 'data/raw/Emotion Diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'positive_E', questionnaire_column = 'Positive_Energy')
+negative_E = extract_emotion_diary_from_raw(path = 'data/raw/Emotion Diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'negative_E', questionnaire_column = 'Negative_Energy')
+anxiety = extract_emotion_diary_from_raw(path = 'data/raw/Emotion Diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'anxiety', questionnaire_column = 'Anxiety')
+annoying = extract_emotion_diary_from_raw(path = 'data/raw/Emotion Diary.xlsx', questionnaire_sheet='Sheet1', df_name = 'annoying', questionnaire_column = 'Irritability')
 
 #data preprocessing
 data_list = [positive, negative, positive_E, negative_E, anxiety, annoying]

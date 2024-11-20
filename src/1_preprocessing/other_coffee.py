@@ -7,12 +7,12 @@ coffee_raw= load_raw_file(path ='data/raw/Lifestyle - Caffeine.xlsx', sheet_name
 
 #data preprocessing
 coffee = exclude_duplicated_id(coffee_raw)
-coffee.drop(['Type', 'Intake', 'Unit_of_measure'], axis=1, inplace=True)
+coffee.drop(['Type', 'Intake', 'Unit'], axis=1, inplace=True)
 coffee.columns = ["ID", "date", "time"]
 coffee['coffee'] =1
 coffee = coffee.replace({'time':'Evening'},'21:00:00')
-coffee = coffee.replace({'time':'Morning'},'09:00:00')
-coffee = coffee.replace({'time':'Afternoon'},'15:00:00')
+coffee = coffee.replace({'time':'AM'},'09:00:00')
+coffee = coffee.replace({'time':'PM'},'15:00:00')
 coffee.reset_index(drop=True, inplace=True)
 
 coffee.to_feather("data/processed/coffee.feather")

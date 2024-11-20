@@ -7,12 +7,12 @@ exercise = load_raw_file('data/raw/Lifestyle - Workouts.xlsx', sheet_name='Sheet
 
 #data preprocessing
 exercise = exclude_duplicated_id(exercise)
-exercise.drop(['Workout_types', 'Workout_time_(minutes)'], axis=1, inplace=True)
+exercise.drop(['Workout_types', 'Workout_duration_(minutes)'], axis=1, inplace=True)
 exercise.columns = ["ID", "date", "time"]
 exercise['exercise'] =1
 exercise = exercise.replace({'time':'Evening'},'21:00:00')
-exercise = exercise.replace({'time':'Morning'},'09:00:00')
-exercise = exercise.replace({'time':'Afternoon'},'15:00:00')
+exercise = exercise.replace({'time':'AM'},'09:00:00')
+exercise = exercise.replace({'time':'PM'},'15:00:00')
 exercise.reset_index(drop=True, inplace=True)
 
 #data save to feather
